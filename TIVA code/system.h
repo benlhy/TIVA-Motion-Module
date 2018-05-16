@@ -13,8 +13,9 @@
 #include "timer.h"
 #include "uart.h"
 #include "includes.h"
-#include "qei.h"
+#include "gen_algo.h"
 
+void delayMS(int ms);
 void sysInit(void);
 void initAll(void);
 void GPIOconfig(void);

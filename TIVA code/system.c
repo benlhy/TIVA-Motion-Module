@@ -6,6 +6,9 @@
  */
 #include "system.h"
 
+void delayMS(int ms){
+    SysCtlDelay((SysCtlClockGet() * ms) / 3000);
+}
 
 
 void sysInit(void){
@@ -18,17 +21,19 @@ void initAll(void){
     uartInit();
     FPULazyStackingEnable();
     FPUEnable();
-
     IntMasterEnable();
-    PWMconfig(3000);
+    PWMconfig();
+    //GAINSconfig();
     QEIconfig(); // zero based
     QEIvelocityConfig();
 
-    IntEnable(INT_UART0);
+    //IntEnable(INT_UART0);
     UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
     GPIOconfig();
     TIMERconfig();
     PULSEconfig();
+
+
 
     //PULSEorderconfig(); // infinite loop until signal received
     CANconfig();

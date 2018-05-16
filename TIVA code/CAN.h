@@ -10,7 +10,7 @@
 
 
 #include "includes.h"
-#include "qei.h"
+#include "motor.h"
 
 #define MASTER 2 // rank of the master NODE
 

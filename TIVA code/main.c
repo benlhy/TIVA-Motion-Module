@@ -76,26 +76,52 @@
 //*****************************************************************************
 #include "includes.h"
 #include "system.h"
+#include "menu.h"
 
-#define BUFFER_SIZE 50
+pid_values motor_pid1;
+pid_values motor_pid2;
+pid_values motor_vel_pid1;
+absolute_data counts1;
+absolute_data counts2;
 
 int main(void) {
 
     initAll();
 
-    SysCtlDelay(SysCtlClockGet());
+    pid_config(&motor_pid1,2.0,0.5,0,MAX_PWM,1000); // sets up the PID struct
+    pid_config(&motor_pid2,1.0,1.0,0,MAX_PWM,500);
+    pid_config(&motor_vel_pid1,30.0,1.0,0,MAX_PWM,3000); // max output, max integration factor
+    absolute_to_relative_config(&counts1,14000,7000,getMotor1Counts());
+    //char output[50];
+    pid_auto_tune(&motor_pid1, 100, MAX_PWM, 1000,getMotor1Counts,setSpeed,zeroMotor1,1);
+    //int result = pid_test(&motor_pid1,500,getMotor1Counts,setSpeed,1);
+    setSpeed(0,1);
+    //sprintf(output,"Result is %d\r\n",result);
+    //uartWrite(output);
 
-    char buffer[BUFFER_SIZE];
-    int counts = 0;
+
+
 
     while (1)
     {
 
-        sprintf(buffer,"Motor 1 angle: %d Motor 2 angle: %d\r\n",getMotor1Counts(),getMotor2Counts());
-        uartWrite(buffer);
+        //int pwm1 = pid_controller(&motor_pid1,500,getMotor1Counts());
+        //sprintf(output,"Motor int: %f Curr value is: %d, Commanded value is: %d\r\n",motor_pid1.ki,getMotor1Counts(),pwm1);
+        //uartWrite(output);
+        //setSpeed(pwm1,1);
 
-        SysCtlDelay(100);
 
+
+
+        //int pwm1vel = pid_controller(&motor_vel_pid1,30,getMotor1Velocity());
+        //sprintf(output,"PWM is: %d, Curr value is: %d \r\n",pwm1vel,getMotor1Velocity());
+        //uartWrite(output);
+
+
+
+
+
+        processUART();
 
     }
 }

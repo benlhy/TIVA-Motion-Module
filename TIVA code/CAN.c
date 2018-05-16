@@ -206,7 +206,7 @@ void PULSEsend(){
 
 // get CAN messages and process them
 void CANget(){
-    unsigned int uIdx;
+    // unsigned int uIdx;
     //
     // If the flag is set, that means that the RX interrupt occurred and
     // there is a message ready to be read from the CAN

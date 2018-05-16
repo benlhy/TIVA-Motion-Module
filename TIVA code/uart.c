@@ -82,7 +82,7 @@ void uartRead(char * message, int maxLength)
     while (!complete)
     {
         data = UARTCharGet(UART0_BASE); // read char when it becomes available
-        if ((data == '\n') || (data == '\r')) {
+        if ((num_bytes==maxLength)||(data == '\n') || (data == '\r')) {
             complete = 1;
         }
         else
@@ -90,9 +90,9 @@ void uartRead(char * message, int maxLength)
             message[num_bytes] = data;
             ++num_bytes;
             // roll over if the array is too small
-            if (num_bytes >= maxLength) {
-                num_bytes = 0;
-            }
+            //if (num_bytes >= maxLength) {
+            //    num_bytes = 0;
+            //}
         }
     }
     // end the string
