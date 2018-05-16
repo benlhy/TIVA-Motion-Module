@@ -74,9 +74,9 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
     // start with 4 test points because we are searching in R3 space
     char output[50];
     float testArray[4][3] = {
-         {1.0,1.0,0.5},
+         {15.0,1.0,0.5},
          {5.5,0.2,0},
-         {10.0,1.0,1.0},
+         {30.0,1.0,1.0},
         {5.0,1.0,0.2}
     };
     int resultArray[4];
@@ -90,9 +90,9 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
             int result=pid_test(pid,desired,curr_val_function,run_motor_function,motor); // test the pid
             run_motor_function(0,1); // turn off motor
             resultArray[i] = result; // save the value
-            sprintf(output,"Result of %d is %d\r\n",i,result);
-            uartWrite(output);
-            delayMS(1000);
+            //sprintf(output,"Result of %d is %d\r\n",i,result);
+            //uartWrite(output);
+            //delayMS(1000);
         }
 
         //order the results
@@ -122,12 +122,12 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
                 }
             }
         }
-        sprintf(output,"Done!\r\n");
+        sprintf(output,"Done Sorting!\r\n");
         uartWrite(output);
         delayMS(1000);
 
         for (i=0;i<4;i++){
-            sprintf(output,"Result of sorted %d is kp:%f ki:%f kd:%f\r\n",i,testArray[i][0],testArray[i][1],testArray[i][2]);
+            sprintf(output,"Sorted %d is result:%d kp:%f ki:%f kd:%f\r\n",i,resultArray[i],testArray[i][0],testArray[i][1],testArray[i][2]);
             uartWrite(output);
             delayMS(1000);
         }
@@ -146,9 +146,9 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
         float reflectedki = centroidki+ alpha*(centroidki-testArray[3][1]);
         float reflectedkd = centroidkd+ alpha*(centroidkd-testArray[3][2]);
 
-        sprintf(output,"Result of reflected points kp:%f ki:%f kd:%f\r\n", reflectedkp,reflectedki,reflectedkd);
-        uartWrite(output);
-        delayMS(1000);
+        //sprintf(output,"Result of reflected points kp:%f ki:%f kd:%f\r\n", reflectedkp,reflectedki,reflectedkd);
+        //uartWrite(output);
+        //delayMS(1000);
         // compute reflected point // if this point is -ve then result is +ve infty
 
         int rresult;
@@ -162,16 +162,16 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
             pid_config(pid,reflectedkp,reflectedki,reflectedkd,limit,intlimit);
             rresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor);
             run_motor_function(0,1); // turn off motor
-            sprintf(output,"Result %d\r\n", rresult);
-                   uartWrite(output);
-                   delayMS(1000);
+            //sprintf(output,"Result %d\r\n", rresult);
+            //uartWrite(output);
+            //delayMS(1000);
         }
 
         if ((resultArray[0]<=rresult) && (rresult<resultArray[1])){
             // replace last value with reflected point and reorder
             sprintf(output,"Case 1\r\n");
-                    uartWrite(output);
-                    delayMS(1000);
+            uartWrite(output);
+            delayMS(1000);
 
 
             testArray[3][0] = reflectedkp;
@@ -205,7 +205,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
                 zero_motor_function();
                 pid_config(pid,expandedkp,expandedki,expandedkd,limit,intlimit);
                 eresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor);
-                run_motor_function(0,1); // turn off motor
+                run_motor_function(0,motor); // turn off motor
             }
 
             if (eresult<rresult){
@@ -243,7 +243,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
             zero_motor_function();
             pid_config(pid,contractedkp,contractedki,contractedkd,limit,intlimit);
             int cresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor);
-            run_motor_function(0,1); // turn off motor
+            run_motor_function(0,motor); // turn off motor
             if (cresult<resultArray[3]){
                 testArray[3][0] = contractedkp;
                 testArray[3][1] = contractedki;
@@ -292,9 +292,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
             }
         }
     }
-    sprintf(output,"Done!\r\n");
-    uartWrite(output);
-    delayMS(1000);
+
 
     for (i=0;i<4;i++){
         sprintf(output,"Result of sorted %d is kp:%f kd:%f ki:%f\r\n",i,testArray[i][0],testArray[i][1],testArray[i][2]);

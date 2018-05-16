@@ -59,17 +59,38 @@ void processUART(){
         float ki;
         float kd;
         sscanf(command,"%d %f %f %f",&num,&kp,&ki,&kd);
-        if (num == 0){
+        if (num == 1){
             motor_pid1.kp=kp;
             motor_pid1.ki=ki;
             motor_pid1.kd=kd;
+            sprintf(buffer,"Motor 1 kp: %f, ki:%f, kd:%f\r\n",motor_pid1.kp,motor_pid1.ki,motor_pid1.kd);
+            uartWrite(buffer);
         }
-        else if (num == 1){
+        else if (num == 2){
             motor_pid2.kp=kp;
             motor_pid2.ki=ki;
             motor_pid2.kd=kd;
+            sprintf(buffer,"Motor 2 kp: %f, ki:%f, kd:%f\r\n",motor_pid2.kp,motor_pid2.ki,motor_pid2.kd);
+            uartWrite(buffer);
         }
         break;
+
+    case 'G': // gets kp ki kd
+        uartRead(command, 10);
+        int num_motor;
+        sscanf(command,"%d",&num_motor);
+        if(num_motor==1){
+            sprintf(buffer,"Motor 1 kp: %f, ki:%f, kd:%f\r\n",motor_pid1.kp,motor_pid1.ki,motor_pid1.kd);
+            uartWrite(buffer);
+        }
+        else if(num_motor==2){
+            sprintf(buffer,"Motor 2 kp: %f, ki:%f, kd:%f\r\n",motor_pid2.kp,motor_pid2.ki,motor_pid2.kd);
+            uartWrite(buffer);
+        }
+
+        break;
+
+
 
     case 'f': // sets motors to go to position
         uartRead(command,30);
