@@ -12,7 +12,7 @@
 #ifndef GEN_ALGO_H_
 #define GEN_ALGO_H_
 
-#define TEST_PERIOD 100000
+#define TEST_PERIOD 100000 // total time to test PID over
 
 typedef struct {
     int max_value;

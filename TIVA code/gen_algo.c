@@ -77,7 +77,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
          {15.0,1.0,0.5},
          {5.5,0.2,0},
          {30.0,1.0,1.0},
-        {5.0,1.0,0.2}
+         {5.0,1.0,0.2}
     };
     int resultArray[4];
     int i=0;
