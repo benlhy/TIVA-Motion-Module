@@ -26,16 +26,26 @@ The modifiable values for the PID control library are:
 * **motor.h**->MAX_PWM ~ the maximum PWM counts. The range of PWM is from 0 to this value
 * **motor.h**->TIME_TO_COUNT ~ the time to count the velocity. The encoder interface will wait this length of time to determine the velocity
 
-## Function Descriptions
+## Useful Function Descriptions
 ### Gen_Algo
 * **absolute_to_relative**: takes a value from an absolute sensor (orientation/counts) and converts it to a relative value. 
 * **pid_controller**: takes a sensed value and attempts to match it with a given desired value. Includes testing and autotuning algorithms.
-* 
+* **pid_autotune**: auto-tunes the PID values.
 
 ### Motor
 * **setSpeed**: sets the speed of the motor based on the pwm counts given.
 * **getMotorXCounts**: gets the counts from the encoder interface, note that absolute_to_relative function is already applied here
 * **getMotorXVelocity**: gets the velocity in counts/time from the QEI interface
 * **zeroMotorX**: zeros the motors and the relative counts
+
+### System
+* **initAll**: calls all the configuration options 
+
+
+### UART
+* **uartRead**: given a char pointer and length to read, reads from UART
+* **uartWrite**: writes from a char pointer
+
+
 
 

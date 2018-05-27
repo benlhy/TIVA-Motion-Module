@@ -86,7 +86,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
     while(search<20){
         for (i=0;i<4;i++){
             zero_motor_function(); // zero the motor
-            pid_config(pid,testArray[i][0],testArray[i][1],testArray[i][2],limit,intlimit); // configure the pid object
+            pid_config(pid,testArray[i][0],testArray[i][1],testArray[i][2],pid->limit,pid->intlimit); // configure the pid object
             int result=pid_test(pid,desired,curr_val_function,run_motor_function,motor); // test the pid
             run_motor_function(0,1); // turn off motor
             resultArray[i] = result; // save the value
@@ -154,7 +154,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
         int rresult;
         if (reflectedkp<0 ||reflectedki<0||reflectedkd<0){
             //don't even calculate this result is horrible
-            pid_config(pid,reflectedkp,reflectedki,reflectedkd,limit,intlimit);
+            pid_config(pid,reflectedkp,reflectedki,reflectedkd,pid->limit,pid->intlimit);
             rresult = INT_MAX;
         }
         else {
@@ -196,14 +196,14 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
             int eresult;
             if (expandedkp<0 ||expandedkp<0||expandedkp<0){
                 //don't even calculate this result is horrible
-                pid_config(pid,expandedkp,expandedkp,expandedkp,limit,intlimit);
+                pid_config(pid,expandedkp,expandedkp,expandedkp,pid->limit,pid->intlimit);
                 eresult = INT_MAX;
             }
             else{
 
                 // compute expanded point
                 zero_motor_function();
-                pid_config(pid,expandedkp,expandedki,expandedkd,limit,intlimit);
+                pid_config(pid,expandedkp,expandedki,expandedkd,pid->limit,pid->intlimit);
                 eresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor);
                 run_motor_function(0,motor); // turn off motor
             }
@@ -241,7 +241,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
 
 
             zero_motor_function();
-            pid_config(pid,contractedkp,contractedki,contractedkd,limit,intlimit);
+            pid_config(pid,contractedkp,contractedki,contractedkd,pid->limit,pid->intlimit);
             int cresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor);
             run_motor_function(0,motor); // turn off motor
             if (cresult<resultArray[3]){

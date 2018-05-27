@@ -22,9 +22,6 @@ static volatile control_data_t M2;
 
 
 
-
-
-
 void GAINSconfig(void){ // sets all gains to zero.
     gains1.kp = 0;
     gains1.ki = 0;

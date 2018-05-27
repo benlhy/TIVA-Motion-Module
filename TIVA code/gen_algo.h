@@ -41,6 +41,6 @@ int pid_controller(pid_values* pid,int desired, int current);
 
 int pid_test(pid_values* pid,int desired_val,int(*curr_val_function)(void),void(*run_motor_function)(int speed,int motor),int motor);
 
-void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*curr_val_function)(void),void(*run_motor_function)(int,int),void(*zero_motor_function)(void),int motor);
+void pid_auto_tune(pid_values* pid,int desired, int(*curr_val_function)(void),void(*run_motor_function)(int,int),void(*zero_motor_function)(void),int motor);
 
 #endif /* GEN_ALGO_H_ */
