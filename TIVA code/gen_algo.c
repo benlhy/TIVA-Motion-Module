@@ -3,24 +3,24 @@
 #include "system.h"
 
 void absolute_to_relative_config(absolute_data *data,int max,int cross,int curr_value){
-    data->max_value = max;
-    data->cross_over_value = cross;
-    data->modifier = 0;
-    data->last_value = curr_value;
+    data->max_value = max; // set max value
+    data->cross_over_value = cross; // set the crossover value
+    data->modifier = 0; // reset the modifier to zero
+    data->last_value = curr_value; // set the last value to the one we are reading now
 }
 
 int absolute_to_relative(int absolute, absolute_data* data){ // computes and returns relative angles, keeps track of it over time.
-    int diff_value = absolute - data->last_value;
+    int diff_value = absolute - data->last_value; // take the difference in value
 
-    if (diff_value > data->cross_over_value){
+    if (diff_value > data->cross_over_value){ // if the difference is greater than the threshold value, remove from the modifier
         data->modifier = data->modifier - data->max_value;
 
     }
-    else if (diff_value < -data->cross_over_value){
+    else if (diff_value < -data->cross_over_value){ // if the difference is less than the threshold vaue, add to the modifer because we crossed over the value
         data->modifier = data->modifier + data->max_value;
     }
-    data->last_value = absolute;
-    return absolute+data->modifier;
+    data->last_value = absolute; // set our last value to the current value
+    return absolute+data->modifier; // return current value + the modifier
 }
 
 
@@ -28,8 +28,8 @@ int absolute_to_relative(int absolute, absolute_data* data){ // computes and ret
 void pid_config(pid_values *pid_val,float kp, float ki, float kd,int limit, int intlimit){
     pid_val->int_value=0;
     pid_val->prev_value=0;
-    pid_val->limit = limit;
-    pid_val->intlimit = intlimit;
+    pid_val->limit = limit; // maximum pwm
+    pid_val->intlimit = intlimit; // maximum integration value
     pid_val->kp=kp;
     pid_val->ki=ki;
     pid_val->kd=kd;
@@ -37,10 +37,12 @@ void pid_config(pid_values *pid_val,float kp, float ki, float kd,int limit, int 
 
 int pid_controller(pid_values* pid, int desired, int current){
     int e = desired - current; // get current error
-    int eint = pid->int_value + e;
+    int eint = pid->int_value + e; // set the integral value
     int ediv = e - pid->prev_value; // no need to divide by time since you are multiplying by a constant->
-    int controlsig = pid->kp*e+pid->kd*ediv+pid->ki*eint;
+    int controlsig = pid->kp*e+pid->kd*ediv+pid->ki*eint; // calculate the control signal
 
+
+    // limit the control signal to the max value
     if(controlsig> pid->limit){
         controlsig = pid->limit;
     }
@@ -48,6 +50,7 @@ int pid_controller(pid_values* pid, int desired, int current){
         controlsig = -pid->limit;
     }
 
+    // limit the integration value
     if (eint>pid->intlimit){
         pid->int_value = pid->intlimit;
     }
@@ -57,20 +60,25 @@ int pid_controller(pid_values* pid, int desired, int current){
     else {
         pid->int_value = eint;
     }
+    // set the previous error to the current error
     pid->prev_value = e;
+
+    // output the control signal
     return controlsig;
-
-
 
 }
 
 
 // this tunes the PID controller to obtain the fastest rise time based on the Nelder Mead Method
 void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*curr_val_function)(void),void(*run_motor_function)(int,int),void(*zero_motor_function)(void),int motor){
+
+    // recommended constants
+
     float alpha = 1;
     float delta = 0.5;
     float gamma = 2;
     float rho = 0.5;
+
     // start with 4 test points because we are searching in R3 space
     char output[50];
     float testArray[4][3] = {
@@ -86,7 +94,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
     while(search<20){
         for (i=0;i<4;i++){
             zero_motor_function(); // zero the motor
-            pid_config(pid,testArray[i][0],testArray[i][1],testArray[i][2],pid->limit,pid->intlimit); // configure the pid object
+            pid_config(pid,testArray[i][0],testArray[i][1],testArray[i][2],limit,intlimit); // configure the pid object
             int result=pid_test(pid,desired,curr_val_function,run_motor_function,motor); // test the pid
             run_motor_function(0,1); // turn off motor
             resultArray[i] = result; // save the value
@@ -152,15 +160,15 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
         // compute reflected point // if this point is -ve then result is +ve infty
 
         int rresult;
-        if (reflectedkp<0 ||reflectedki<0||reflectedkd<0){
+        if (reflectedkp<0 ||reflectedki<0||reflectedkd<0){ // if any of the PID constants are negative
             //don't even calculate this result is horrible
-            pid_config(pid,reflectedkp,reflectedki,reflectedkd,pid->limit,pid->intlimit);
-            rresult = INT_MAX;
+            pid_config(pid,reflectedkp,reflectedki,reflectedkd,limit,intlimit);
+            rresult = INT_MAX; // set the worst possible value to tell the algorithm to move away from this point
         }
         else {
-            zero_motor_function();
-            pid_config(pid,reflectedkp,reflectedki,reflectedkd,limit,intlimit);
-            rresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor);
+            zero_motor_function(); // zero the motor
+            pid_config(pid,reflectedkp,reflectedki,reflectedkd,limit,intlimit); // configure our PID struct
+            rresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor); // test our PID performance
             run_motor_function(0,1); // turn off motor
             //sprintf(output,"Result %d\r\n", rresult);
             //uartWrite(output);
@@ -168,10 +176,13 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
         }
 
         if ((resultArray[0]<=rresult) && (rresult<resultArray[1])){
+            // if we are worse than the best result but better than the second best
             // replace last value with reflected point and reorder
             sprintf(output,"Case 1\r\n");
             uartWrite(output);
             delayMS(1000);
+
+
 
 
             testArray[3][0] = reflectedkp;
@@ -182,33 +193,37 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
         }
 
 
-        else if (rresult<resultArray[0]) {
+        else if (rresult<resultArray[0]) { // if we are better than the best result
             // we can expect to find interesting things along the reflected line.
-
             sprintf(output,"Case 2\r\n");
-                    uartWrite(output);
-                    delayMS(1000);
+            uartWrite(output);
+            delayMS(1000);
+
+
+            // expand the point
 
 
             float expandedkp = centroidkp+ gamma*(reflectedkp-centroidkp);
             float expandedki = centroidki+ gamma*(reflectedki-centroidki);
             float expandedkd = centroidkd+ gamma*(reflectedkd-centroidkd);
             int eresult;
-            if (expandedkp<0 ||expandedkp<0||expandedkp<0){
+
+
+            if (expandedkp<0 ||expandedkp<0||expandedkp<0){ // negative PID constants
                 //don't even calculate this result is horrible
-                pid_config(pid,expandedkp,expandedkp,expandedkp,pid->limit,pid->intlimit);
-                eresult = INT_MAX;
+                pid_config(pid,expandedkp,expandedkp,expandedkp,limit,intlimit);
+                eresult = INT_MAX; // worst possible result
             }
             else{
 
                 // compute expanded point
-                zero_motor_function();
-                pid_config(pid,expandedkp,expandedki,expandedkd,pid->limit,pid->intlimit);
-                eresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor);
+                zero_motor_function(); //zero motors
+                pid_config(pid,expandedkp,expandedki,expandedkd,limit,intlimit); // configure with expanded point
+                eresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor); //test and obtain results
                 run_motor_function(0,motor); // turn off motor
             }
 
-            if (eresult<rresult){
+            if (eresult<rresult){ // our expanded value works better
                 // replace last value with expanded point and reorder
                 testArray[3][0] = expandedkp;
                 testArray[3][1] = expandedki;
@@ -216,7 +231,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
                 resultArray[3] = eresult;
                 // go to step 1
             }
-            else {
+            else { // expansion resulted in a worse result than our reflected value
                 testArray[3][0] = reflectedkp;
                 testArray[3][1] = reflectedki;
                 testArray[3][2] = reflectedkd;
@@ -236,12 +251,14 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
             float contractedki = centroidki+ rho*(testArray[3][1]-centroidki);
             float contractedkd = centroidkd+ rho*(testArray[3][2]-centroidkd);
 
+            // is there a negative test case here?
+
 
 
 
 
             zero_motor_function();
-            pid_config(pid,contractedkp,contractedki,contractedkd,pid->limit,pid->intlimit);
+            pid_config(pid,contractedkp,contractedki,contractedkd,limit,intlimit);
             int cresult=pid_test(pid,desired,curr_val_function,run_motor_function,motor);
             run_motor_function(0,motor); // turn off motor
             if (cresult<resultArray[3]){
@@ -264,8 +281,10 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
         }
 
 
-    search++;
+    search++; //increment the search counter
     }
+
+    // reorder results
     int tempresult;
     float tempkp;
     float tempkd;
@@ -299,6 +318,7 @@ void pid_auto_tune(pid_values* pid,int desired, int limit, int intlimit,int(*cur
         uartWrite(output);
         delayMS(1000);
     }
+    pid_config(pid,testArray[0][0],testArray[0][1],testArray[0][2],limit,intlimit);
 }
 
 int pid_test(pid_values* pid,int desired_val,int(*curr_val_function)(void),void(*run_motor_function)(int,int),int motor){

@@ -3,7 +3,7 @@ DC motor control with TM4C123. Each board controls 2 motors independently and ca
 
 # Use Cases
 * A base module for a differential drive robot.
-* 
+* SCARA-like robot (combine two modules).
 
 # Features
 * TM4C123 MCU
@@ -21,7 +21,7 @@ There are some drawbacks using the Nelder-Mead method because the quality of the
 
 ## Modifiable Values
 The modifiable values for the PID control library are:
-* **gen_algo.c**->testArray ~ This array stores 4 initial points to search
+* **gen_algo.c**->testArray ~ This array stores 4 initial points (P,I,D) to search
 * **gen_algo.h**->TEST_PERIOD ~ This value is the length of time in cycles to measure the PID response
 * **motor.h**->MAX_PWM ~ the maximum PWM counts. The range of PWM is from 0 to this value
 * **motor.h**->TIME_TO_COUNT ~ the time to count the velocity. The encoder interface will wait this length of time to determine the velocity
@@ -46,6 +46,7 @@ The modifiable values for the PID control library are:
 * **uartRead**: given a char pointer and length to read, reads from UART
 * **uartWrite**: writes from a char pointer
 
-
+# Known Problems
+* CAN bus interface not fully implemented yet
 
 

@@ -22,6 +22,9 @@ static volatile control_data_t M2;
 
 
 
+
+
+
 void GAINSconfig(void){ // sets all gains to zero.
     gains1.kp = 0;
     gains1.ki = 0;
@@ -50,6 +53,7 @@ void set_desired_angle(int angle, int motor)
     IntMasterEnable();
 }
 
+// retrieves the desired angle for a given motor
 int get_desired_angle(int motor)
 {
     int angle;
@@ -79,6 +83,7 @@ void reset_controller_error(void)
     E2.Edot = 0;
 }
 
+// get the motor pwm that we set
 int get_motor_pwm(int motor)
 {
     int pwm;
@@ -196,6 +201,8 @@ void pid_controller(int reference, int actual, int motor)
 }
 
 */
+
+// load position trajectory 
 void load_position_trajectory(int motor)      // Load trajectory for tracking
 {
     int i, n, data;
@@ -210,4 +217,3 @@ void load_position_trajectory(int motor)      // Load trajectory for tracking
         write_refPos(data, i, motor);   // Write data to reference position array
     }
 }
-
